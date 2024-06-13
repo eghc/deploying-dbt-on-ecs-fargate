@@ -3,4 +3,4 @@
 
 echo "Running dbt main flow"
 # The --profiles-dir flag is essential for directing dbt execution to the profiles.yml file within this project.
-dbt run --profiles-dir . --project-dir .
+dbt build --target prod
