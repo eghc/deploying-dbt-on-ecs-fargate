@@ -1,28 +1,48 @@
-FROM python:3.8.1-slim-buster
+ARG py_version=3.11.2
 
-# Install OS dependencies
-RUN apt-get update && apt-get install -qq -y \
-    git gcc build-essential libpq-dev --fix-missing --no-install-recommends \
-    && apt-get clean
+FROM --platform=linux/amd64 python:$py_version-slim-bullseye as base
 
-# Make sure we are using latest pip
-RUN pip install --upgrade pip
+RUN apt-get update \
+  && apt-get dist-upgrade -y \
+  && apt-get install -y --no-install-recommends \
+    build-essential=12.9 \
+    ca-certificates=20210119 \
+    git=1:2.30.2-1+deb11u2 \
+    libpq-dev=13.14-0+deb11u1 \
+    make=4.3-4.1 \
+    openssh-client=1:8.4p1-5+deb11u3 \
+    software-properties-common=0.96.20.2-2.1 \
+  && apt-get clean \
+  && rm -rf \
+    /var/lib/apt/lists/* \
+    /tmp/* \
+    /var/tmp/*
 
-# Create directory for dbt config
-RUN mkdir -p /root/.dbt
+ENV PYTHONIOENCODING=utf-8
+ENV LANG=C.UTF-8
 
-# Copy requirements.txt
-COPY requirements.txt requirements.txt
-
-# Install dependencies
-RUN pip install -r requirements.txt
-
-# Copy source code
-COPY jaffle_shop/ .
+RUN python -m pip install --upgrade "pip==24.0" "setuptools==69.2.0" "wheel==0.43.0" --no-cache-dir
 
 
-RUN chmod -R 755 scripts/
+## DBT CORE
+FROM base as dbt-core
 
-# we run everything through sh, so we can execute all we'd like
-ENTRYPOINT [ "/bin/sh", "-c" ]
-CMD ["scripts/dbt_container_init_commands.sh"]
+# comit for DBT core v1.8 https://github.com/dbt-labs/dbt-core/releases/tag/v1.8.0
+ARG commit_ref=v1.8.0
+
+HEALTHCHECK CMD dbt --version || exit 1
+
+WORKDIR /usr/app/dbt/
+
+ENTRYPOINT ["dbt build"]
+
+RUN python -m pip install --no-cache-dir "dbt-core @ git+https://github.com/dbt-labs/dbt-core@${commit_ref}#subdirectory=core"
+
+
+## REDSHIFT
+FROM dbt-core as dbt-redshift
+
+# commit for Redshift v1.8 https://github.com/dbt-labs/dbt-redshift/releases/tag/v1.8.0
+ARG commit_ref=v1.8.0
+
+RUN python -m pip install --no-cache-dir "dbt-redshift @ git+https://github.com/dbt-labs/dbt-redshift@${commit_ref}#egg=dbt-redshift"
