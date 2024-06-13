@@ -16,12 +16,12 @@ SECRET_MANAGER_NAME = os.environ["SECRET_MANAGER_NAME"]
 CONTAINER_NAME = os.environ["CONTAINER_NAME"]
 
 
-def get_snowflake_credentials():
+def get_credentials():
     # Retrieve snowflake credentials from AWS secret manager
     session = boto3.session.Session()
     client = session.client(
         service_name="secretsmanager",
-        region_name="us-east-1"
+        region_name="us-west-2"
     )
 
     credentials = {}
@@ -43,21 +43,18 @@ def lambda_handler(event, context):
         ecs_task_definition_name = match.group(1) + ':' + match.group(2)
 
         logger.info("Setting container environment variables")
-        snowflake_credentials = get_snowflake_credentials()
-
+        credentials = get_credentials()
+        
         # Set the container overrides
         container_overrides = [
             {
                 'name': CONTAINER_NAME,
                 'environment': [
-                    {'name': 'SNF_ACCOUNT', 'value': snowflake_credentials['account']},
-                    {'name': 'SNF_USER', 'value': snowflake_credentials['user']},
-                    {'name': 'SNF_ROLE', 'value': snowflake_credentials['role']},
-                    {'name': 'SNF_PASSWORD', 'value': snowflake_credentials['password']},
-                    {'name': 'SNF_WAREHOUSE', 'value': snowflake_credentials['warehouse']},
-                    {'name': 'SNF_DATABASE', 'value': snowflake_credentials['database']},
-                    {'name': 'SNF_SCHEMA', 'value': snowflake_credentials['schema']},
-                    {'name': 'DBT_ENV', 'value': os.getenv('ENVIRONMENT')}
+                    {'name': 'REDSHIFT_HOST', 'value': credentials['host']},
+                    {'name': 'REDSHIFT_USERNAME', 'value': credentials['user']},
+                    {'name': 'REDSHIFT_PASSWORD', 'value': credentials['password']},
+                    {'name': 'REDSHIFT_DATABASE', 'value': credentials['dbname']},
+                    {'name': 'REDSHIFT_SCHEMA', 'value': credentials['schema']}
                 ]
             },
         ]

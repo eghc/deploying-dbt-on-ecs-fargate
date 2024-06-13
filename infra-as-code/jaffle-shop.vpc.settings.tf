@@ -28,10 +28,10 @@ module "private_subnet_1a" {
   source            = "./modules/vpc-resources/subnet"
   PROJECT_NAME      = local.PROJECT_NAME
   ENV               = local.ENV
-  RESOURCE_SUFFIX   = "private-subnet-1a"
+  RESOURCE_SUFFIX   = "private-subnet-2a"
   AWS_TAGS          = merge(var.AWS_TAGS, tomap({ "Type" = "private" }))
   VPC_ID            = module.base-vpc.id
-  AVAILABILITY_ZONE = "us-east-1a"
+  AVAILABILITY_ZONE = "us-west-2a"
   CIDR_BLOCK        = var.PRIVATE_SUBNET_1A_CIDR_BLOCKS[local.ENV]
 }
 
@@ -65,10 +65,10 @@ module "public_subnet_1a" {
   source            = "./modules/vpc-resources/subnet"
   PROJECT_NAME      = local.PROJECT_NAME
   ENV               = local.ENV
-  RESOURCE_SUFFIX   = "public-subnet-1a"
+  RESOURCE_SUFFIX   = "public-subnet-2a"
   AWS_TAGS          = merge(var.AWS_TAGS, tomap({ "Type" = "public" }))
   VPC_ID            = module.base-vpc.id
-  AVAILABILITY_ZONE = "us-east-1a"
+  AVAILABILITY_ZONE = "us-west-2a"
   CIDR_BLOCK        = var.PUBLIC_SUBNET_1A_CIDR_BLOCKS[local.ENV]
 }
 

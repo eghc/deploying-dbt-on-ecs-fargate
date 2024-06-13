@@ -1,13 +1,13 @@
 jaffle_shop:
-  target: snowflake
+  target: redshift
   outputs:
-    snowflake:
-      type: snowflake
-      account: "{{ env_var('SNF_ACCOUNT') }}"
-      user: "{{ env_var('SNF_USER') }}"
-      password: "{{ env_var('SNF_PASSWORD') }}"
-      role: "{{ env_var('SNF_ROLE') }}"
-      warehouse: "{{ env_var('SNF_WAREHOUSE') }}"
-      database: "{{ env_var('SNF_DATABASE') }}"
-      schema: "{{ env_var('SNF_SCHEMA') }}"
-      threads: 8
+    prod:
+      type: redshift
+      host: "{{ env_var('REDSHIFT_HOST') }}"
+      user: "{{ env_var('REDSHIFT_USERNAME') }}"
+      password: "{{ env_var('REDSHIFT_PASSWORD') }}"
+      port: 5439
+      dbname: "{{ env_var('REDSHIFT_DATABASE') }}"
+      schema:  "{{ env_var('REDSHIFT_SCHEMA') }}"
+      threads: 4
+      sslmode: verify-full
